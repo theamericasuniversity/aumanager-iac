@@ -50,3 +50,6 @@ az aks create `
     --vnet-subnet-id $SUBNET_ID `
     --service-principal $AKS_SP_ID `
     --client-secret $AKS_SP_PASS
+
+# Creating service principal to be used by GitHub Actions
+az ad sp create-for-rbac --name {your-service-principal-name} --role contributor --scopes /subscriptions/9b3db624-2934-44c6-830f-9a17cb92cb4a/resourceGroups/Demo-AUManager --sdk-auth

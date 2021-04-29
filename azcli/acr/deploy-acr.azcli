@@ -1,0 +1,25 @@
+###################################
+# Global variables                #
+###################################
+$SP_NAME="your-service-principal-name"
+$SP_PASSWORD="your-service-principal-password"
+$SP_TENANT="your-service-principal-tenant"
+$RG_NAME="your-resource-group-name"
+$ACR_NAME="your-container-registry-name"
+
+###################################
+# Authenticating in Azure         #
+###################################
+
+# Loging into Azure through Service Principal: http://aumanager-sp
+az login --service-principal -u $SP_NAME -p $SP_PASSWORD --tenant $SP_TENANT
+
+####################################
+# Creting Azure Container Registry #
+####################################
+
+# Creating a new Azure Container Registry
+az acr create --resource-group $RG_NAME --name $ACR_NAME --sku Basic
+
+# Enabling admin user for the registry
+az acr update -n $ACR_NAME --admin-enabled true
