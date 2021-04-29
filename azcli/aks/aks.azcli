@@ -1,0 +1,52 @@
+#####################################
+# Global variables                  #
+#####################################
+$SP_NAME="general-service-principal-name"
+$SP_PASSWORD="general-service-principal-password"
+$SP_TENANT="general-service-principal-tenantid"
+$RG_NAME="resource-group-name"
+$LOCATION="your-preferred-azure-regin"
+$AKS_NAME="your-aks-cluster-name"
+$AKS_VNET="your-existing-vnet-name"
+$AKS_SUBNET="your-existing-subnet-name"
+$AKS_SP_NAME="aks-service-principal-name"
+$AKS_SP_ID="aks-service-principal-id"
+$AKS_SP_PASS="aks-service-principal-password"
+
+######################################
+# Authenticating in Azure            #
+######################################
+
+# Loging into Azure through Service Principal: http://aumanager-sp
+az login --service-principal -u $SP_NAME -p $SP_PASSWORD --tenant $SP_TENANT
+
+######################################
+# Creating a new AKS cluster         #
+######################################
+
+# Listing K8s available versions
+# az aks get-versions --location $LOCATION --output table
+
+# Creating a new Service Principal for AKS
+az ad sp create-for-rbac --name $AKS_SP_NAME --skip-assignment
+
+# Capturing VNet and Subnet data
+$VNET_ID=$(az network vnet show --resource-group $RG_NAME --name $AKS_VNET --query id -o tsv)
+$SUBNET_ID=$(az network vnet subnet show --resource-group $RG_NAME --vnet-name $AKS_VNET --name $AKS_SUBNET --query id -o tsv)
+
+# Creating role assignment allowing service principal to communicate through VNet
+az role assignment create --assignee $AKS_SP_ID --scope $VNET_ID --role "Network Contributor"
+
+# Creating a new AKS cluster
+az aks create `
+    -g $RG_NAME `
+    -n $AKS_NAME `
+    --node-count 3 `
+    --network-plugin kubenet `
+    --service-cidr 10.0.4.0/24 `
+    --dns-service-ip 10.0.4.10 `
+    --pod-cidr 10.244.0.0/16 `
+    --docker-bridge-address 172.17.0.1/24 `
+    --vnet-subnet-id $SUBNET_ID `
+    --service-principal $AKS_SP_ID `
+    --client-secret $AKS_SP_PASS
