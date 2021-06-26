@@ -1,0 +1,25 @@
+###################################
+# Global variables                #
+###################################
+$RG_NAME="Demo-AUManager"
+$ACI_NAME="aumanager-geo-aci"
+$ACR_NAME="aumanageracr"
+$ACR_LOGIN_SERVER=$(az acr show --name $ACR_NAME --resource-group $RG_NAME --query "loginServer" --output tsv)
+$ACR_USERNAME="aumanageracr"
+$ACR_PASSWORD="s9ziQHwU1EztwzyioDb8/q9vb6vbbu6Y"
+$IMAGE="aumanager-geo-api:c2f81bb58691472884ead16bde188d5f1505f70e"
+
+####################################
+# Creting Azure Container Instance #
+####################################
+az container create `
+    --name $ACI_NAME `
+    --resource-group $RG_NAME `
+    --image $ACR_LOGIN_SERVER/$IMAGE `
+    --registry-login-server $ACR_LOGIN_SERVER `
+    --registry-username $ACR_USERNAME `
+    --registry-password $ACR_PASSWORD `
+    --dns-name-label $ACI_NAME `
+    --cpu 1 `
+    --memory 1 `
+    --query ipAddress.fqdn
